@@ -273,7 +273,6 @@ def get_rename_filepaths(filepaths: list):
         modified_time = str(modified_timestamp).split()[1].split('.')[0].replace(':', '_')
         file_size = calc_file_size(os.path.getsize(filepath))
 
-        print(creation_timestamp.strftime('%Y/%m/%d'))
         for pattern_substr in pattern:
             if pattern_substr == r'%#%':
                 rename_filename += '#'
