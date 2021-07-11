@@ -21,7 +21,9 @@ includes = [
     "functools",
     "re",
     "datetime",
-    "collections"
+    "collections",
+    "random",
+    "string",
 ]
 excludes = [
     "asyncio",
