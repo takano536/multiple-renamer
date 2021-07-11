@@ -28,20 +28,20 @@ parser.add_argument(
 parser.add_argument(
     '-o', '--output_name',
     required=True,
-    help='output filename pattern (example: "%%n (#).%%E") \n'
-    '# : number with zero padding \n'
-    '? : random character \n'
-    '%%N: filename \n'
-    '%%n: filename without extention \n'
-    '%%E: file extention \n'
-    '%%P: parent foldername \n'
-    '%%D: creation date \n'
-    '%%T: creation time \n'
-    '%%d: update date \n'
-    '%%t: update time \n'
-    '%%S: file size \n'
-    '%%#: # (escape sequence) \n'
-    '%%%%: %% (escape sequence) \n'
+    help='output filename pattern (example: "%%filename%% (#).%%ext%%") \n'
+    '#                   : number with zero padding \n'
+    '?                   : random character \n'
+    '%%#%%                 : # (escape sequence) \n'
+    '%%%%                  : %% (escape sequence) \n'
+    '%%filename-with-ext%% : filename with extention \n'
+    '%%filename%%          : filename without extention \n'
+    '%%ext%%               : file extention \n'
+    '%%foldername%%        : parent foldername \n'
+    '%%creation-date%%     : creation date \n'
+    '%%creation-time%%     : creation time \n'
+    '%%modified-date%%     : modified date \n'
+    '%%modified-time%%     : modified time \n'
+    '%%size%%              : file size \n'
 )
 parser.add_argument(
     '-r', '--replace',
@@ -214,8 +214,8 @@ def duplicate_rename(filepath: str):
 
 def get_rename_filepaths(filepaths: list):
     def divide(string: str):
-        match = re.findall(r'%.|#+|\?+', string)
-        not_match = re.split(r'%.|#+|\?+', string)
+        match = re.findall(r'%.*?%|#+|\?+', string)
+        not_match = re.split(r'%.*?%|#+|\?+', string)
         substrs = list()
         for (char1, char2) in itertools.zip_longest(not_match, match):
             if not char1 == '' and char1 is not None:
@@ -268,35 +268,34 @@ def get_rename_filepaths(filepaths: list):
             creation_timestamp = datetime.datetime.fromtimestamp(os.path.getctime(filepath))
             creation_date = str(creation_timestamp).split()[0]
             creation_time = str(creation_timestamp).split()[1].split('.')[0].replace(':', '_')
-        updated_timestamp = datetime.datetime.fromtimestamp(os.path.getmtime(filepath))
-        updated_date = str(updated_timestamp).split()[0]
-        updated_time = str(updated_timestamp).split()[1].split('.')[0].replace(':', '_')
+        modified_timestamp = datetime.datetime.fromtimestamp(os.path.getmtime(filepath))
+        modified_date = str(modified_timestamp).split()[0]
+        modified_time = str(modified_timestamp).split()[1].split('.')[0].replace(':', '_')
         file_size = calc_file_size(os.path.getsize(filepath))
 
+        print(creation_timestamp.strftime('%Y/%m/%d'))
         for pattern_substr in pattern:
-            if pattern_substr == r'%#':
+            if pattern_substr == r'%#%':
                 rename_filename += '#'
-            elif pattern_substr == r'%?':
-                rename_filename += '?'
             elif pattern_substr == r'%%':
                 rename_filename += '%'
-            elif pattern_substr == r'%N':
+            elif pattern_substr == r'%filename-with-ext%':
                 rename_filename += filename
-            elif pattern_substr == r'%n':
+            elif pattern_substr == r'%filename%':
                 rename_filename += filename_without_ext
-            elif pattern_substr == r'%E':
+            elif pattern_substr == r'%ext%':
                 rename_filename += file_ext
-            elif pattern_substr == r'%P':
+            elif pattern_substr == r'%foldername%':
                 rename_filename += dirname
-            elif pattern_substr == r'%D' and is_windows:
+            elif pattern_substr == r'%creation-date%' and is_windows:
                 rename_filename += creation_date
-            elif pattern_substr == r'%T' and is_windows:
+            elif pattern_substr == r'%creation-time%' and is_windows:
                 rename_filename += creation_time
-            elif pattern_substr == r'%d':
-                rename_filename += updated_date
-            elif pattern_substr == r'%t':
-                rename_filename += updated_time
-            elif pattern_substr == r'%S':
+            elif pattern_substr == r'%modified-date%':
+                rename_filename += modified_date
+            elif pattern_substr == r'%modified-time%':
+                rename_filename += modified_time
+            elif pattern_substr == r'%size%':
                 rename_filename += file_size
             elif '#' in pattern_substr:
                 rename_filename += str(cnt).zfill(len(pattern_substr))
