@@ -28,7 +28,7 @@ parser.add_argument(
 parser.add_argument(
     '-o', '--output_name',
     required=True,
-    help='output filename pattern (example: "%%filename%% (#).%%ext%%") \n'
+    help='output filename pattern (example: "-o %%filename%% (#).%%ext%%") \n'
     '#                   : number with zero padding \n'
     '?                   : random character \n'
     '%%#%%                 : # (escape sequence) \n'
@@ -51,7 +51,7 @@ parser.add_argument(
 )
 parser.add_argument(
     '-r', '--replace',
-    help='character replacement (ex: "-r a:A")'
+    help='character replacement (example: "-r a:A")'
 )
 parser.add_argument(
     '-s', '--start_number',
@@ -61,7 +61,7 @@ parser.add_argument(
 )
 parser.add_argument(
     '--used_char',
-    choices=['upper', 'lower', 'digit'],
+    choices=['upper', 'lower', 'number'],
     nargs='*',
     help='characters used in random characters'
 )
@@ -97,9 +97,9 @@ if args.used_char is None:
     RAND_STR = string.ascii_letters + string.digits
 elif 'upper' in args.used_char and 'lower' in args.used_char:
     RAND_STR = string.ascii_letters
-elif 'upper' in args.used_char and 'digit' in args.used_char:
+elif 'upper' in args.used_char and 'number' in args.used_char:
     RAND_STR = string.ascii_uppercase + string.digits
-elif 'lower' in args.used_char and 'digit' in args.used_char:
+elif 'lower' in args.used_char and 'number' in args.used_char:
     RAND_STR = string.ascii_lowercase + string.digits
 elif 'upper' in args.used_char:
     RAND_STR = string.ascii_uppercase
