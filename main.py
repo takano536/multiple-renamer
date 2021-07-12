@@ -44,6 +44,12 @@ parser.add_argument(
     '%%size%%              : file size \n'
 )
 parser.add_argument(
+    '-e', '--exclude',
+    nargs='*',
+    help='exclude file, directory or extension \n'
+    'selecting an extension, prefix it with dot at the beginning'
+)
+parser.add_argument(
     '-r', '--replace',
     help='character replacement (ex: "-r a:A")'
 )
@@ -78,6 +84,8 @@ parser.add_argument(
 args = parser.parse_args()
 if args.replace is not None and (args.replace[0] == ':' or args.replace.count(':') != 1):
     parser.error('invalid format: -r/--replace (ex: "-r a:A")')
+if args.exclude is None:
+    args.exclude = []
 
 
 FULL_WIDTH = ''.join(chr(0xff01 + i) for i in range(94))
@@ -105,6 +113,7 @@ def natural_sort_cmp(a_str: str, b_str: str, ext_cmp: bool):
     def divide(string: str):
         substr = list()
         string = string.translate(FULL2HALF)
+        string = [s.replace(os.sep, '/') for s in string]
         groups = itertools.groupby(string, lambda char: 1 if char.isdigit() else -1 if re.match(SYMBOL_REGEX, char) else 0)
         for _, group in groups:
             substr.append(''.join(group))
@@ -112,6 +121,10 @@ def natural_sort_cmp(a_str: str, b_str: str, ext_cmp: bool):
 
     if ext_cmp and os.path.splitext(a_str)[1] != os.path.splitext(b_str)[1]:
         return 1 if os.path.splitext(a_str)[1] > os.path.splitext(b_str)[1] else -1
+
+    a_dir_str, b_dir_str = divide(os.path.split(a_str)[0]), divide(os.path.split(b_str)[0])
+    if len(a_dir_str) != len(b_dir_str):
+        return 1 if len(a_str) > len(b_str) else -1
 
     a_str, b_str = divide(a_str), divide(b_str)
     rep_cnt = 0
@@ -144,12 +157,27 @@ def natural_sort_cmp(a_str: str, b_str: str, ext_cmp: bool):
         return 1 if len(a_str) > len(b_str) else -1
 
 
-def input_filepaths(inputs: list, is_recursive: bool):
+def input_filepaths(inputs: list, exc: list, is_recursive: bool):
+    exc_ext, exc_file, exc_folder = list(), list(), list()
+    for arg in exc:
+        arg = arg.replace('/', os.sep)
+        if arg[0] == '.':
+            exc_ext.append(arg.lower())
+        elif os.path.isfile(arg):
+            exc_file.append(os.path.abspath(arg))
+        elif os.path.isdir(arg):
+            exc_folder.append(os.path.abspath(arg))
+
     filepaths = list()
     folders = list()
     for arg in inputs:
         arg = arg.replace('/', os.sep)
+        arg = os.path.abspath(arg)
         if not os.path.exists(arg):
+            continue
+        if os.path.splitext(arg)[1].lower() in exc_ext:
+            continue
+        if arg in exc_file or arg in exc_folder:
             continue
         elif os.path.isfile(arg):
             filepaths.append(arg)
@@ -160,6 +188,14 @@ def input_filepaths(inputs: list, is_recursive: bool):
         for arg in glob.glob(folder + '/**/*.*' if is_recursive else folder + '/*.*', recursive=is_recursive):
             arg = arg.replace('/', os.sep)
             if not os.path.exists(arg):
+                continue
+            if not os.path.exists(arg):
+                continue
+            if os.path.splitext(arg)[1].lower() in exc_ext:
+                continue
+            if arg in exc_file:
+                continue
+            if os.path.split(arg)[0] in exc_folder:
                 continue
             elif os.path.isfile(arg):
                 filepaths.append(arg)
@@ -250,7 +286,7 @@ def get_rename_filepaths(filepaths: list):
 
     filepath_set = set()
     for dirpath in set(dirpaths):
-        filepath_set = filepath_set.union(set(input_filepaths([dirpath], is_recursive=False)))
+        filepath_set = filepath_set.union(set(input_filepaths([dirpath], list(), is_recursive=False)))
     rename_filepath_set = filepath_set - set(filepaths)
     duplicate_filepath_cnt = collections.defaultdict(lambda: 0)
 
@@ -385,17 +421,18 @@ def rename(filepaths, rename_filepaths):
 
 
 def main():
-    filepaths = input_filepaths(args.input, args.recursive)
+    filepaths = input_filepaths(args.input, args.exclude, args.recursive)
+    sorted_filepaths = sort_files(filepaths, args.sort)
 
-    rename_filepaths = get_rename_filepaths(filepaths)
-    preview(filepaths, rename_filepaths)
+    rename_filepaths = get_rename_filepaths(sorted_filepaths)
+    preview(sorted_filepaths, rename_filepaths)
     print('\nProceed ([y]/n)? ', end='')
     ans = input()
     should_rename = True if len(ans) != 0 and ans[0].lower() == 'y' else False
     if not should_rename:
         return
 
-    ret = rename(filepaths, rename_filepaths)
+    ret = rename(sorted_filepaths, rename_filepaths)
     if ret == 0:
         print('\nRename was successful.')
     else:
