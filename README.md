@@ -1,6 +1,6 @@
 # multiple-renamer
 本ツールは、複数のファイルを一括でリネームすることができるツールです。  
-[こちらのreleasesページ](https://github.com/takano536/multiiple-renamer/releases)からダウンロードすることができます。
+[こちらのreleasesページ](https://github.com/takano536/multiple-renamer/releases)からダウンロードすることができます。
 
 ## 特徴
 本ツールは、様々な正規表現を用いて、柔軟にファイル名を変更することができます。  
