@@ -11,7 +11,7 @@
 ```
 MultipleRenamer.exe --help
 ```
-以下のコマンドは、プレイリストを作成するコマンドの一例です。
+以下のコマンドは、ファイル名を変換するコマンドの一例です。
 ```
 MultipleRenamer.exe -i text.txt C:\Users\user\Music C:\Users\user\Documents -o "%filename% (#).%ext%" -e .ini
 ```
