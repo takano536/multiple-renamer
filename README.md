@@ -116,7 +116,7 @@ error: the following arguments are required: -i/--input, -o/--output_name
 #### 開始番号
 ```
 -s <開始番号>, --start_number <開始番号>
-正規表現の数字の開始番号を指定します。
+数字の開始番号を指定します。
 デフォルト値は「1」です。
 ```
 #### ランダムな文字に使用する文字の種類
