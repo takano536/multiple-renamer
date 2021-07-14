@@ -13,7 +13,7 @@ MultipleRenamer.exe --help
 ```
 以下のコマンドは、ファイル名を変換するコマンドの一例です。
 ```
-MultipleRenamer.exe -i text.txt C:\Users\user\Music C:\Users\user\Documents -o "%filename% (#).%ext%" -e .ini
+MultipleRenamer.exe -i text.txt C:\Users\user\Music C:\Users\user\Documents -o "%foldername%_##.%ext%" -e .ini
 ```
 以下は、実行結果例です。
 ```
@@ -46,7 +46,7 @@ optional arguments:
                         #                   : number with zero padding
                         ?                   : random character
                         %#%                 : # (escape sequence)
-                        %                  : % (escape sequence)
+                        %                   : % (escape sequence)
                         %filename-with-ext% : filename with extention
                         %filename%          : filename without extention
                         %ext%               : file extention
